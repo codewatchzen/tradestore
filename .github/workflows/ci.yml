@@ -19,8 +19,8 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Set JAVA_HOME environment variable
-      run: echo "JAVA_HOME=${{ steps.setup-java.outputs.jdk-path }}" >> $GITHUB_ENV
+    - name: Verify JAVA_HOME
+      run: echo "JAVA_HOME is set to: $JAVA_HOME"
 
     - name: Build with Maven
       run: mvn clean install
@@ -36,3 +36,5 @@ jobs:
         path: '.'
         out: 'reports'
         args: '--noupdate --data /github/workspace/dependency-check-data'
+      env:
+        JAVA_HOME: ${{ steps.setup-java.outputs.jdk-path }}
