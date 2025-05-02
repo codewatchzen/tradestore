@@ -19,9 +19,6 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Verify JAVA_HOME
-      run: echo "JAVA_HOME is set to: $JAVA_HOME"
-
     - name: Build with Maven
       run: mvn clean install
 
