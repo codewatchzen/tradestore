@@ -88,6 +88,12 @@
             <version>5.0.0</version>
             <scope>test</scope>
         </dependency>
+        <!-- OWASP Dependency Check (Plugin, not runtime) -->
+        <dependency>
+            <groupId>org.owasp</groupId>
+            <artifactId>dependency-check-core</artifactId>
+            <version>8.2.1</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -95,6 +101,19 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!-- OWASP Plugin -->
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>8.2.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
