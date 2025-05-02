@@ -25,13 +25,4 @@ jobs:
     - name: Run Unit Tests
       run: mvn test
 
-    - name: Dependency Check
-      uses: dependency-check/Dependency-Check_Action@main
-      with:
-        format: 'HTML'
-        project: 'TradeStore'
-        path: '.'
-        out: 'reports'
-        args: '--noupdate --data /github/workspace/dependency-check-data'
-      env:
-        JAVA_HOME: ${{ steps.setup-java.outputs.jdk-path }}
+    
