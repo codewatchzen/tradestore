@@ -1,4 +1,4 @@
-package com.dbank.tradestore.tests;
+package com.dbank.tradestore.tests.service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -73,6 +73,7 @@ public class TradeServiceTests {
 
         assertEquals("Lower version trade cannot be accepted", exception.getMessage());
         verify(tradeSqlRepository, never()).save(lowerVersionTrade);
+        
     }
 
     // Test case to replace trades with same version with current record
