@@ -19,18 +19,20 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Set JAVA_HOME environment variable
+      run: echo "JAVA_HOME=${{ steps.setup-java.outputs.jdk-path }}" >> $GITHUB_ENV
+
     - name: Build with Maven
       run: mvn clean install
 
     - name: Run Unit Tests
       run: mvn test
 
-    - name: OWASP Dependency Check (Maven Plugin)
-      run: mvn org.owasp:dependency-check-maven:check
-
-    - name: Upload OWASP Report
-      uses: actions/upload-artifact@v3
+    - name: Dependency Check
+      uses: dependency-check/Dependency-Check_Action@main
       with:
-        name: dependency-check-report
-        path: target/dependency-check-report.html 
-      
+        format: 'HTML'
+        project: 'TradeStore'
+        path: '.'
+        out: 'reports'
+        args: '--noupdate --data /github/workspace/dependency-check-data'
