@@ -42,7 +42,9 @@ public class TradeServiceTests {
         tradeService = new TradeService(tradeSqlRepository, tradeMongoRepository);
     }
 
-    private Trade createTrade(String tradeId, int version, String counterPartyId, String bookId, LocalDate maturityDate, LocalDate createdDate) {
+    // Helper method to create a Trade object
+    private Trade createTrade(String tradeId, int version, String counterPartyId, 
+                                        String bookId, LocalDate maturityDate, LocalDate createdDate) {
         Trade trade = new Trade();
         trade.setTradeId(tradeId);
         trade.setVersion(version);
@@ -56,40 +58,46 @@ public class TradeServiceTests {
     
      // Test case to reject trades with lower version and generate an exception
     @Test
-public void testRejectLowerVersionTrade() {
-    // Mock the existing trade in the repository
-    Trade existingTrade = createTrade("T1", 2, "CP-1", "B1", LocalDate.now().plusDays(10), LocalDate.now());
-    when(tradeSqlRepository.findByTradeId("T1")).thenReturn(existingTrade);
+    public void testRejectLowerVersionTrade() {
+        // Mock the existing trade in the repository
+        Trade existingTrade = createTrade("T1", 2, "CP-1", "B1", LocalDate.now().plusDays(10), LocalDate.now());
+        when(tradeSqlRepository.findByTradeId("T1")).thenReturn(existingTrade);
 
-    // Create a new trade with a lower version
-    Trade lowerVersionTrade = createTrade("T1", 1, "CP-1", "B2", LocalDate.now().plusDays(10), LocalDate.now());
+        // Create a new trade with a lower version
+        Trade lowerVersionTrade = createTrade("T1", 1, "CP-1", "B2", LocalDate.now().plusDays(10), LocalDate.now());
 
-    // Expect a TradeException to be thrown
-    TradeException exception = assertThrows(TradeException.class, () -> {
-        tradeService.saveTrade(lowerVersionTrade);
-    });
+        // Expect a TradeException to be thrown
+        TradeException exception = assertThrows(TradeException.class, () -> {
+            tradeService.saveTrade(lowerVersionTrade);
+        });
 
-    assertEquals("Lower version trade cannot be accepted", exception.getMessage());
-    verify(tradeSqlRepository, never()).save(lowerVersionTrade);
-}
+        assertEquals("Lower version trade cannot be accepted", exception.getMessage());
+        verify(tradeSqlRepository, never()).save(lowerVersionTrade);
+    }
 
     // Test case to replace trades with same version with current record
     @Test
-public void testReplaceSameVersionTrade() {
-    // Mock the existing trade in the repository
-    Trade existingTrade = createTrade("T1", 1, "CP-1", "B1", LocalDate.now().plusDays(10), LocalDate.now());
-    when(tradeSqlRepository.findByTradeId("T1")).thenReturn(existingTrade);
+    public void testReplaceSameVersionTrade() {
+        // Mock the existing trade in the repository
+        Trade existingTrade = createTrade("T1", 1, "CP-1", "B1", LocalDate.now().plusDays(10), LocalDate.now());
+        when(tradeSqlRepository.findByTradeId("T1")).thenReturn(existingTrade);
 
-    // Create a new trade with the same version but different BookId
-    Trade updatedTrade = createTrade("T1", 1, "CP-1", "B2", LocalDate.now().plusDays(10), LocalDate.now());
+        // Create a new trade with the same version but different BookId and maturity date
+        Trade updatedTrade = createTrade("T1", 1, "CP-1", "B2", LocalDate.now().plusDays(20), LocalDate.now());
 
-    // Save the updated trade
-    tradeService.saveTrade(updatedTrade);
+        // Save the updated trade
+        tradeService.saveTrade(updatedTrade);
 
-    // Verify the updated trade is saved
-    verify(tradeSqlRepository).save(updatedTrade);
-    verify(tradeMongoRepository).save(updatedTrade);
-}
+        // Verify the existing trade is updated and saved
+        verify(tradeSqlRepository).save(existingTrade); // Ensure the existing trade is updated
+        verify(tradeMongoRepository).save(existingTrade); // Ensure MongoDB is updated
+
+        // Verify that the fields of the existing trade are updated
+        assertEquals("B2", existingTrade.getBookId());
+        assertEquals(LocalDate.now().plusDays(20), existingTrade.getMaturityDate());
+        
+        assertEquals("N", existingTrade.getExpired()); // Ensure expired status is reset
+    }
 
     // Test case to reject trades with past maturity dates
     @Test

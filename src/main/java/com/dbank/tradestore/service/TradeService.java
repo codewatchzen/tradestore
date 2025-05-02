@@ -5,6 +5,7 @@ import com.dbank.tradestore.repository.TradeSqlRepository;
 import com.dbank.tradestore.exception.TradeException;
 import com.dbank.tradestore.model.Trade;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
@@ -23,18 +24,41 @@ public class TradeService {
         this.tradeMongoRepository = tradeRepository;
     }
 
+    @Transactional
     public void saveTrade(Trade trade) {
 
         validateTrade(trade);
 
+        // Check if an existing trade with the same TradeId exists
+    Trade existingTrade = tradeSqlRepository.findByTradeId(trade.getTradeId());
+    if (existingTrade != null) {
+        // Update the existing trade's fields
+        existingTrade.setVersion(trade.getVersion());
+        existingTrade.setCounterPartyId(trade.getCounterPartyId());
+        existingTrade.setBookId(trade.getBookId());
+        existingTrade.setMaturityDate(trade.getMaturityDate());
+        existingTrade.setCreatedDate(LocalDate.now());
+        existingTrade.setExpired("N"); // Reset expired status
+
+        // Save the updated trade to SQL and MongoDB
+        tradeSqlRepository.save(existingTrade);
+        tradeMongoRepository.save(existingTrade);
+    } else {
+        // If no existing trade, save the new trade
         trade.setCreatedDate(LocalDate.now());
         trade.setExpired("N"); // Set expired to "N" by default
-
-        // Save to SQL database
         tradeSqlRepository.save(trade);
-        
-        // Save to MongoDB
         tradeMongoRepository.save(trade);
+    }
+
+        // trade.setCreatedDate(LocalDate.now());
+        // trade.setExpired("N"); // Set expired to "N" by default
+
+        // // Save to SQL database
+        // tradeSqlRepository.save(trade);
+        
+        // // Save to MongoDB
+        // tradeMongoRepository.save(trade);
     }
 
     private void  validateTrade(Trade trade) {
@@ -50,6 +74,8 @@ public class TradeService {
             if (trade.getVersion() < existing.getVersion()) {
                 throw new TradeException("Lower version trade cannot be accepted");
             }
+
+            
         }
     }
 

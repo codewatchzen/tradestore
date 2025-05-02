@@ -1,4 +1,4 @@
-package com.db.tradestore.controller;
+package com.dbank.tradestore.controller;
 
 public class TradeController {
     
