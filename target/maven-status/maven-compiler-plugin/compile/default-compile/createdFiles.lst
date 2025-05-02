@@ -1,6 +1,0 @@
-com\dbank\tradestore\repository\TradeMongoRepository.class
-com\dbank\tradestore\model\Trade.class
-com\dbank\tradestore\repository\TradeSqlRepository.class
-com\dbank\tradestore\service\TradeService.class
-com\db\tradestore\controller\TradeController.class
-com\dbank\tradestore\exception\TradeException.class
