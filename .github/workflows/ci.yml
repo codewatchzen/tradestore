@@ -32,4 +32,8 @@ jobs:
       uses: dependency-check/Dependency-Check_Action@main
       with:
         format: 'HTML'
-        failOnCVSS: 7
+        project: 'TradeStore'
+        path: '.'
+        out: 'reports'
+        args: '--noupdate --data /github/workspace/dependency-check-data' 
+      
