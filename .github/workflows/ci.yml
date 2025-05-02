@@ -35,5 +35,5 @@ jobs:
         project: 'TradeStore'
         path: '.'
         out: 'reports'
-        args: '--noupdate --data /github/workspace/dependency-check-data' 
+        args: '--failOnCVSS 10' 
       
