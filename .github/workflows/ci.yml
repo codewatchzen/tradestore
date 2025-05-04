@@ -31,7 +31,7 @@ jobs:
         run: |
           echo "JAVA_HOME is $JAVA_HOME"
           mkdir -p dependency-check
-          curl -L https://github.com/jeremylong/DependencyCheck/releases/latest/download/dependency-check-8.4.2-release.zip -o dc.zip
+          curl -L https://github.com/jeremylong/DependencyCheck/releases/download/v8.4.2/dependency-check-8.4.2-release.zip -o dc.zip
           unzip dc.zip -d dependency-check
           export PATH=$PATH:$(pwd)/dependency-check/bin
           export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java)))))
