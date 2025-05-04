@@ -1,5 +1,7 @@
 package com.dbank.tradestore.tests.service;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -22,7 +24,8 @@ class ProducerServiceTest {
     @InjectMocks
     private ProducerService producerService;
 
-    //@Test
+    @Disabled("KafkaTemplate cannot be mocked on Java 24 with current setup")
+    @Test
     void testSend() {
         TradeMessage msg = new TradeMessage("T1", 1);
         producerService.send(msg);

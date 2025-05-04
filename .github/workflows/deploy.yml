@@ -1,0 +1,39 @@
+name: Deploy-TradeStore
+
+on:
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  deploy:
+    name: Deploy to Dev
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Build JAR
+      run: mvn clean package -DskipTests
+
+    - name: Build Docker image
+      run: docker build -t tradestore-app .
+
+    - name: Run Docker container (Simulate Deploy)
+      run: |
+        docker run -d \
+          --name tradestore-container \
+          -p 8080:8080 \
+          tradestore-app
+
+    - name: Display Running Containers
+      run: docker ps

@@ -1,0 +1,28 @@
+@startuml
+class Trade {
+  +Long id
+  +String tradeId
+  +int version
+  +String counterPartyId
+  +String bookId
+  +LocalDate maturityDate
+  +LocalDate createdDate
+  +String expired
+}
+
+class TradeRepository {
+  +save(Trade): Trade
+  +findByTradeId(String): Trade
+}
+
+class TradeService {
+  +saveTrade(Trade): void
+}
+
+class TradeController {
+  +saveTrade(Trade): ResponseEntity
+}
+
+TradeController --> TradeService
+TradeService --> TradeRepository
+@enduml

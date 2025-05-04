@@ -15,8 +15,8 @@ import static org.mockito.Mockito.when;
 
 import com.dbank.tradestore.exception.TradeException;
 import com.dbank.tradestore.model.Trade;
-import com.dbank.tradestore.repository.TradeMongoRepository;
-import com.dbank.tradestore.repository.TradeSqlRepository;
+import com.dbank.tradestore.repository.nosql.TradeMongoRepository;
+import com.dbank.tradestore.repository.sql.TradeSqlRepository;
 import com.dbank.tradestore.service.TradeService;
 
 // Test Class for TradeService 

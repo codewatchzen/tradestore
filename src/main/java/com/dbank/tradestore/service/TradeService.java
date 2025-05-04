@@ -1,100 +1,79 @@
 package com.dbank.tradestore.service;
 
-import com.dbank.tradestore.repository.TradeMongoRepository;
-import com.dbank.tradestore.repository.TradeSqlRepository;
+import java.time.LocalDate;
+import java.util.function.Consumer;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.dbank.tradestore.exception.TradeException;
 import com.dbank.tradestore.model.Trade;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.stereotype.Service;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import com.dbank.tradestore.repository.nosql.TradeMongoRepository;
+import com.dbank.tradestore.repository.sql.TradeSqlRepository;
 
 @Service
 public class TradeService {
 
-    @Autowired
-    private TradeSqlRepository tradeSqlRepository;
-    @Autowired
-    private TradeMongoRepository tradeMongoRepository;
+    private final TradeSqlRepository tradeSqlRepository;
+    private final TradeMongoRepository tradeMongoRepository;
 
-    public TradeService(TradeSqlRepository tradeSqlRepository, TradeMongoRepository tradeRepository) {
-        this.tradeSqlRepository = tradeSqlRepository; 
-        this.tradeMongoRepository = tradeRepository;
+    public TradeService(TradeSqlRepository tradeSqlRepository, TradeMongoRepository tradeMongoRepository) {
+        this.tradeSqlRepository = tradeSqlRepository;
+        this.tradeMongoRepository = tradeMongoRepository;
     }
 
     @Transactional
     public void saveTrade(Trade trade) {
-
-        validateTrade(trade);
-
-        // Check if an existing trade with the same TradeId exists
-    Trade existingTrade = tradeSqlRepository.findByTradeId(trade.getTradeId());
-    if (existingTrade != null) {
-        // Update the existing trade's fields
-        existingTrade.setVersion(trade.getVersion());
-        existingTrade.setCounterPartyId(trade.getCounterPartyId());
-        existingTrade.setBookId(trade.getBookId());
-        existingTrade.setMaturityDate(trade.getMaturityDate());
-        existingTrade.setCreatedDate(LocalDate.now());
-        existingTrade.setExpired("N"); // Reset expired status
-
-        // Save the updated trade to SQL and MongoDB
-        tradeSqlRepository.save(existingTrade);
-        tradeMongoRepository.save(existingTrade);
-    } else {
-        // If no existing trade, save the new trade
-        trade.setCreatedDate(LocalDate.now());
-        trade.setExpired("N"); // Set expired to "N" by default
-        tradeSqlRepository.save(trade);
-        tradeMongoRepository.save(trade);
-    }
-
-        // trade.setCreatedDate(LocalDate.now());
-        // trade.setExpired("N"); // Set expired to "N" by default
-
-        // // Save to SQL database
-        // tradeSqlRepository.save(trade);
         
-        // // Save to MongoDB
-        // tradeMongoRepository.save(trade);
+        Trade existingTrade = tradeSqlRepository.findByTradeId(trade.getTradeId());
+
+        validateTrade(trade, existingTrade);
+
+        Trade tradeToSave = (existingTrade != null)
+                ? updateExistingTrade(existingTrade, trade)
+                : prepareNewTrade(trade);
+
+        tradeSqlRepository.save(tradeToSave);
+        tradeMongoRepository.save(tradeToSave);
     }
 
-    private void  validateTrade(Trade trade) {
-
-        //validate if maturity date is in the past
-        if(trade.getMaturityDate().isBefore(LocalDate.now())) {
+    private void validateTrade(Trade trade, Trade existingTrade) {
+        if (trade.getMaturityDate().isBefore(LocalDate.now())) {
             throw new TradeException(trade.getTradeId(), "Maturity Date cannot be in the past");
         }
-
-        // Check if version is lower than existing trade version
-        Trade existing = tradeSqlRepository.findByTradeId(trade.getTradeId());
-        if (existing != null) {
-            if (trade.getVersion() < existing.getVersion()) {
-                throw new TradeException("Lower version trade cannot be accepted");
-            }
-
-            
+         
+        if (trade.getVersion() < existingTrade.getVersion()) {
+            throw new TradeException("Lower version trade cannot be accepted");
         }
     }
 
+    private Trade updateExistingTrade(Trade existing, Trade incoming) {
+        existing.setVersion(incoming.getVersion());
+        existing.setCounterPartyId(incoming.getCounterPartyId());
+        existing.setBookId(incoming.getBookId());
+        existing.setMaturityDate(incoming.getMaturityDate());
+        existing.setCreatedDate(LocalDate.now());
+        existing.setExpired("N");
+        return existing;
+    }
 
+    private Trade prepareNewTrade(Trade trade) {
+        trade.setCreatedDate(LocalDate.now());
+        trade.setExpired("N");
+        return trade;
+    }
 
     public void markExpiredTrades() {
-        tradeSqlRepository.findAll().forEach(trade -> {
+        Consumer<Trade> markExpiredIfDue = trade -> {
             if (trade.getMaturityDate().isBefore(LocalDate.now())) {
                 trade.setExpired("Y");
-                tradeSqlRepository.save(trade);
+                // Save the trade in both repositories
+                    tradeSqlRepository.save(trade);
+                    tradeMongoRepository.save(trade);
             }
-        });
+        };
 
-        tradeMongoRepository.findAll().forEach(trade -> {
-            if (trade.getMaturityDate().isBefore(LocalDate.now())) {
-                trade.setExpired("Y");
-                tradeMongoRepository.save(trade);
-            }
-        });
+        tradeSqlRepository.findAll().forEach(markExpiredIfDue);
+        tradeMongoRepository.findAll().forEach(markExpiredIfDue);
     }
-    
 }

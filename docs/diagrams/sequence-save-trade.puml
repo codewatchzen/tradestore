@@ -1,0 +1,24 @@
+@startuml
+actor Client
+participant Controller
+participant TradeService
+participant TradeRepository
+participant MongoRepository
+database PostgreSQL
+database MongoDB
+
+Client -> Controller : POST /trade/save
+Controller -> TradeService : saveTrade(trade)
+TradeService -> TradeRepository : save(trade)
+TradeRepository -> PostgreSQL : INSERT trade
+activate PostgreSQL
+PostgreSQL --> TradeRepository : success
+deactivate PostgreSQL
+TradeService -> MongoRepository : save(trade)
+MongoRepository -> MongoDB : INSERT trade
+activate MongoDB
+MongoDB --> MongoRepository : success
+deactivate MongoDB
+TradeService --> Controller : return response
+Controller --> Client : HTTP 200 OK
+@enduml

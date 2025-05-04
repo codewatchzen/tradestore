@@ -1,0 +1,23 @@
+@startuml
+actor Client
+participant "TradeController" as Controller
+participant "TradeService" as Service
+participant "KafkaProducer" as Producer
+queue "Kafka Topic: trade-input" as KafkaInput
+participant "KafkaStreamProcessor" as StreamProcessor
+queue "Kafka Topic: trade-output" as KafkaOutput
+participant "TradeConsumerService" as Consumer
+database PostgreSQL
+
+Client -> Controller : POST /trade/save
+Controller -> Service : saveTrade(trade)
+Service -> Producer : sendToKafka(trade)
+Producer -> KafkaInput : publish(trade)
+
+KafkaInput -> StreamProcessor : process(trade)
+StreamProcessor -> StreamProcessor : validate version, maturityDate
+StreamProcessor -> KafkaOutput : publish(processedTrade)
+
+KafkaOutput -> Consumer : consume(processedTrade)
+Consumer -> PostgreSQL : save(processedTrade)
+@enduml

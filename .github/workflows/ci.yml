@@ -2,7 +2,7 @@ name: CI-TradeStore
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "main" ]
   pull_request:
     branches: [ "main", "master" ]
 
@@ -11,18 +11,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    - name: Build with Maven
-      run: mvn clean install
+      - name: Build with Maven
+        run: mvn clean install
 
-    - name: Run Unit Tests
-      run: mvn test
+      - name: Run Unit Tests
+        run: mvn test
 
-    
+      - name: Run OWASP Dependency Check
+        shell: bash
+        run: |
+          echo "JAVA_HOME is $JAVA_HOME"
+          mkdir -p dependency-check
+          curl -L https://github.com/jeremylong/DependencyCheck/releases/latest/download/dependency-check-8.4.2-release.zip -o dc.zip
+          unzip dc.zip -d dependency-check
+          export PATH=$PATH:$(pwd)/dependency-check/bin
+          export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java)))))
+          echo "Using JAVA_HOME=$JAVA_HOME"
+          dependency-check/bin/dependency-check.sh \
+            --project "TradeStore" \
+            --scan . \
+            --format "HTML" \
+            --failOnCVSS 10 \
+            --out dependency-check-report

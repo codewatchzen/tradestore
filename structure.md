@@ -1,10 +1,19 @@
-Structure of the project
+### Structure of the project
 
+```
 com.dbank.tradestore
-|-- config           
-|-- controller       
+|-- config 
+|   |-- KafkaConsumerConfig.java
+|   |-- KafkaProducerConfig.java
+|-- consumer
+|   |-- TradeListener.java          
+|-- controller
+|   |-- TradeController.java
+|-- dto
+|   |-- TradeMessage.java    
 |-- service
-│    |-- TradeService.java
+│   |-- TradeService.java
+|   |-- ProducerService.java 
 |-- model
 │    |-- Trade.java
 |-- exception
@@ -12,10 +21,14 @@ com.dbank.tradestore
 |-- repository
 │    |-- TradeSqlRepository.java
 │    |-- TradeMongoRepository.java
-|-- streaming
-│    |-- TradeListener.java
 |-- scheduler
-│    |-- ExpiryJob.java
+│    |-- ExpiryJobScheduler.java
 |-- tests
 │    |-- TradeServiceTests.java
 |--pom.xml
+|-- TradeStoreApplication.java //only for localtesting purposes
+|-- resources/application.properties
+|-- docker-compose.yml
+|-- .github/workflows/ci.yml, deploy.yml
+
+```
