@@ -12,10 +12,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -34,7 +34,7 @@ jobs:
           curl -L https://github.com/jeremylong/DependencyCheck/releases/download/v8.4.2/dependency-check-8.4.2-release.zip -o dc.zip
           unzip dc.zip -d dependency-check
           export PATH=$PATH:$(pwd)/dependency-check/bin
-          export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java)))))
+          export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
           echo "Using JAVA_HOME=$JAVA_HOME"
           dependency-check/bin/dependency-check.sh \
             --project "TradeStore" \
