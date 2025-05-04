@@ -30,9 +30,6 @@ jobs:
     - name: Build Docker image
       run: docker build -t tradestore-app .
 
-    - name: Start service with Docker Compose
-      run: docker-compose -p tradestore up -d
-
     - name: Build App Docker Image
       run: docker build -t tradestore-app .
 
