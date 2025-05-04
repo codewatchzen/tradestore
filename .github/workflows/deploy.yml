@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to Dev
+    name: Simulate Deploy to Dev
     runs-on: ubuntu-latest
 
     steps:
@@ -28,10 +28,17 @@ jobs:
     - name: Build Docker image
       run: docker build -t tradestore-app .
 
+    - name: Start service with Docker Compose
+      run: docker-compose -p tradestore up -d
+
+    - name: Build App Docker Image
+      run: docker build -t tradestore-app .
+
     - name: Run Docker container (Simulate Deploy)
       run: |
         docker run -d \
-          --name tradestore-container \
+          --name tradestore-app \
+          --network host \
           -p 8080:8080 \
           tradestore-app
 
