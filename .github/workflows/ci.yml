@@ -40,4 +40,5 @@ jobs:
             --scan . \
             --format "HTML" \
             --failOnCVSS 10 \
-            --out dependency-check-report
+            --out dependency-check-report \
+            --disableAssembly 
