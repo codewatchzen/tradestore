@@ -115,7 +115,7 @@
         <dependency>
             <groupId>org.owasp</groupId>
             <artifactId>dependency-check-core</artifactId>
-            <version>8.2.1</version>
+            <version>12.1.2</version>
         </dependency>
 
     </dependencies>
